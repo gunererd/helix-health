@@ -14,18 +14,24 @@ Interactive TUI for viewing and searching Helix editor's health information.
 
 ## Installation
 
-### From source
+### Arch Linux (AUR)
 
 ```bash
-git clone https://github.com/gunererd/helix-health.git
-cd helix-health
-go build
+yay -S helix-health
 ```
 
 ### Using go install
 
 ```bash
 go install github.com/gunererd/helix-health@latest
+```
+
+### From source
+
+```bash
+git clone https://github.com/gunererd/helix-health.git
+cd helix-health
+go build
 ```
 
 ## Usage
