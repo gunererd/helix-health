@@ -8,28 +8,48 @@ import (
 // parseHealthOutput parses helix --health output into rows.
 // Returns rows, column header, and config info lines.
 func parseHealthOutput(output string) ([]Row, string, []string) {
-	scanner := bufio.NewScanner(strings.NewReader(output))
 	var rows []Row
 	var currentRow *Row
 	var header string
 	var configLines []string
-	lineNum := 0
+	var allLines []string
 
+	// Collect all lines
+	scanner := bufio.NewScanner(strings.NewReader(output))
 	for scanner.Scan() {
-		line := scanner.Text()
-		lineNum++
+		allLines = append(allLines, scanner.Text())
+	}
 
-		// Capture config info lines
-		if lineNum <= healthOutputConfigLines {
-			configLines = append(configLines, line)
-			continue
-		}
+	if len(allLines) == 0 {
+		return rows, header, configLines
+	}
 
-		// Capture the column header line
-		if lineNum == healthOutputHeaderLine {
-			header = line
-			continue
-		}
+	// Phase 1: Collect config lines (non-empty lines from start)
+	i := 0
+	for i < len(allLines) && strings.TrimSpace(allLines[i]) != "" {
+		configLines = append(configLines, allLines[i])
+		i++
+	}
+
+	// Phase 2: Skip blank lines
+	for i < len(allLines) && strings.TrimSpace(allLines[i]) == "" {
+		i++
+	}
+
+	// Phase 3: Next non-empty line is the header
+	if i < len(allLines) {
+		header = allLines[i]
+		i++
+	}
+
+	// Phase 4: Skip blank lines after header
+	for i < len(allLines) && strings.TrimSpace(allLines[i]) == "" {
+		i++
+	}
+
+	// Phase 5: Parse language rows
+	for i < len(allLines) {
+		line := allLines[i]
 
 		// Check if this is a new row (line doesn't start with space or tab)
 		if len(line) > 0 && line[0] != ' ' && line[0] != '\t' {
@@ -40,6 +60,10 @@ func parseHealthOutput(output string) ([]Row, string, []string) {
 
 			// Start new row
 			parts := strings.Fields(line)
+			if len(parts) == 0 {
+				i++
+				continue
+			}
 			language := parts[0]
 
 			tools := extractTools(line)
@@ -59,6 +83,8 @@ func parseHealthOutput(output string) ([]Row, string, []string) {
 			tools := extractTools(line)
 			currentRow.SearchTerms = append(currentRow.SearchTerms, tools...)
 		}
+
+		i++
 	}
 
 	if currentRow != nil {

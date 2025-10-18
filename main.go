@@ -45,14 +45,7 @@ func (r Row) matchesSearchTerm(query string) bool {
 
 // UI layout constants
 const (
-	tuiHeaderHeight = 12 // Search input + blank line + config lines (7) + blank line + column header + blank line
 	tuiFooterHeight = 1
-)
-
-// Parsing constants
-const (
-	healthOutputConfigLines = 7 // Number of config info lines before the header
-	healthOutputHeaderLine  = 8 // Line number of the column header
 )
 
 // Styles
@@ -113,11 +106,13 @@ func runNonInteractive(rows []Row, header string, configLines []string, searchTe
 		width = 80 // fallback to 80 if we can't detect
 	}
 
+	// Print config lines as-is
 	for _, line := range configLines {
-		fmt.Println(" " + line)
+		fmt.Println(line)
 	}
 	fmt.Println()
 
+	// Filter rows
 	var filteredRows []Row
 	for _, row := range rows {
 		if slices.ContainsFunc(searchTerms, row.matchesSearchTerm) {
@@ -125,14 +120,15 @@ func runNonInteractive(rows []Row, header string, configLines []string, searchTe
 		}
 	}
 
-	fmt.Println(" " + headerStyle.Render(header))
-	fmt.Println()
+	// Print header
+	fmt.Println(headerStyle.Render(header))
 
 	if len(filteredRows) == 0 {
-		fmt.Println(" No matches found")
+		fmt.Println("No matches found")
 		return
 	}
 
+	// Print filtered language rows
 	for i, row := range filteredRows {
 		// Add separator between rows
 		if i > 0 {
@@ -143,7 +139,7 @@ func runNonInteractive(rows []Row, header string, configLines []string, searchTe
 		for _, line := range row.Lines {
 			processedLine := highlightLineMatches(line, searchTerms)
 			processedLine = colorizeSymbols(processedLine)
-			fmt.Println(" " + processedLine)
+			fmt.Println(processedLine)
 		}
 	}
 }

@@ -22,6 +22,12 @@ type Model struct {
 	isSearching  bool
 }
 
+// headerHeight calculates the dynamic header height based on actual config lines
+// Search input (1) + blank (1) + config lines (N) + blank (1) + header (1) + blank (1)
+func (m Model) headerHeight() int {
+	return 1 + 1 + len(m.configLines) + 1 + 1 + 1
+}
+
 func (m Model) Init() tea.Cmd {
 	return textinput.Blink
 }
@@ -35,12 +41,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		verticalMarginHeight := tuiHeaderHeight + tuiFooterHeight
+		verticalMarginHeight := m.headerHeight() + tuiFooterHeight
 
 		if !m.ready {
 			// Initialize viewport on first window size message
 			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
-			m.viewport.YPosition = tuiHeaderHeight
+			m.viewport.YPosition = m.headerHeight()
 			m.ready = true
 		} else {
 			m.viewport.Width = msg.Width
