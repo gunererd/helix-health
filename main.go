@@ -25,6 +25,19 @@ import (
 	"golang.org/x/term"
 )
 
+// findHelixCommand searches for the helix editor command in PATH.
+func findHelixCommand() (string, error) {
+	if _, err := exec.LookPath("helix"); err == nil {
+		return "helix", nil
+	}
+
+	if _, err := exec.LookPath("hx"); err == nil {
+		return "hx", nil
+	}
+
+	return "", fmt.Errorf("helix editor not found in PATH (tried 'helix' and 'hx')")
+}
+
 // Row represents a language row from helix --health
 type Row struct {
 	Language    string
@@ -60,10 +73,17 @@ var (
 )
 
 func main() {
-	cmd := exec.Command("helix", "--health")
+	helixCmd, err := findHelixCommand()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintln(os.Stderr, "Please install Helix editor: https://helix-editor.com/")
+		os.Exit(1)
+	}
+
+	cmd := exec.Command(helixCmd, "--health")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error running helix --health: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error running %s --health: %v\n", helixCmd, err)
 		os.Exit(1)
 	}
 
