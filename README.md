@@ -20,6 +20,16 @@ Interactive TUI for viewing and searching Helix editor's health information.
 yay -S helix-health
 ```
 
+### Nix
+
+```bash
+# Run directly
+nix run github:gunererd/helix-health
+
+# Run with arguments
+nix run github:gunererd/helix-health python golang rust
+```
+
 ### Using go install
 
 ```bash
